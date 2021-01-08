@@ -1,3 +1,7 @@
+"""
+This version just has the classes completed and a moving scene
+"""
+
 import pygame
 import neat # documentation: https://neat-python.readthedocs.io/en/latest/config_file.html
 import time

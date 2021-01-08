@@ -1,3 +1,7 @@
+"""
+This is the main version with the AI implemented and a GUI with pygame
+"""
+
 import pygame
 import neat # documentation: https://neat-python.readthedocs.io/en/latest/config_file.html
 import time
@@ -23,8 +27,12 @@ PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "pipe
 BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "base.png")))
 BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bg.png")))
 
-STAT_FONT = pygame.font.SysFont("comicsans", 50)
-STAT_FONT_SMALL = pygame.font.SysFont("comicsans", 30)
+
+FLAPPY_BIRD_FONT = pygame.font.Font(os.path.join("fonts", "flappybirdy", "FlappyBirdy.ttf"), 90)
+FLAPPY_BIRD_FONT_SMALL = pygame.font.Font(os.path.join("fonts", "flappybirdy", "FlappyBirdy.ttf"), 50)
+
+STAT_FONT_BOLD = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Bold.ttf"), 50)
+STAT_FONT_SMALL = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), 25)
 
 # ----- we'll create a class for each of the main objects:
 
@@ -168,7 +176,7 @@ class Pipe:
  
 class Base: 
     """
-    Represnts the moving floor of the game.
+    Represents the moving floor of the game.
     """
     VEL = 5 # same as pipe, how fast it moves
     WIDTH = BASE_IMG.get_width() 
@@ -202,7 +210,7 @@ class Base:
         win.blit(self.IMG, (self.x1, self.y))
         win.blit(self.IMG, (self.x2, self.y))
 
-class Button():
+class Button:
     """
     Creates a button that can be drawn to the screen.
     init((color), fontSize, x, y, width, height, text="")
@@ -216,17 +224,19 @@ class Button():
         self.height = height
         self.text = text
 
-    def draw(self, win, outline=None):
+    def draw(self, win, outline=None, outline_size=2):
         #Call this method to draw the button on the screen
         if outline:
-            pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
+            # if the user gives us an outline and an outline size, then add an outline
+            pygame.draw.rect(win, outline, (self.x - outline_size, self.y - outline_size, self.width + (2 * outline_size), self.height + (2 * outline_size)), 0)
         
         if self.color != None: 
-            pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
+            pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height), 0)
         
         if self.text != '':
-            font = pygame.font.SysFont('comicsans', self.fontSize)
+            font = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), self.fontSize)
             text = font.render(self.text, 1, (0,0,0))
+            # draw the text to the screen, centering it according to the box
             win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
 
     def isOver(self, pos):
@@ -234,10 +244,10 @@ class Button():
         if pos[0] > self.x and pos[0] < self.x + self.width:
             if pos[1] > self.y and pos[1] < self.y + self.height:
                 return True
-            
+        # pos is going to be the mouse position returned from pygame.mouse.get_pos()    
         return False
 
-def draw_window(win, birds, pipes, base, score, gen): 
+def draw_window(win, birds, pipes, base, score, exit_button=None, gen=None, threshold_msg=None): 
     """
     Draws everything to the window
     """ 
@@ -248,19 +258,26 @@ def draw_window(win, birds, pipes, base, score, gen):
         pipe.draw(win) # draw pipes
     
     # set the text to be equal to the score
-    text = STAT_FONT.render("Score: " + str(score), 1, (255, 255, 255))
+    text = STAT_FONT_BOLD.render(str(score), 1, (255, 255, 255))
     # draw the score- this just checks to make sure that the text is never off the screen 
-    win.blit(text, (WIN_WIDTH - 10 - text.get_width(), 10)) 
+    win.blit(text, (WIN_WIDTH/2 - text.get_width()/2, 125)) 
     
-    # draw the generation
-    text = STAT_FONT_SMALL.render("Generation: " + str(gen), 1, (255, 255, 255))
-    win.blit(text, (10, 10)) 
+    if gen is not None:
+        # draw the generation
+        text = STAT_FONT_SMALL.render("Generation: " + str(gen), 1, (255, 255, 255))
+        win.blit(text, (10, 10)) 
 
-    # draw number of birds alive
-    text = STAT_FONT_SMALL.render("Alive: " + str(len(birds)), 1, (255, 255, 255))
-    win.blit(text, (10, 35)) 
+        # draw number of birds alive
+        text = STAT_FONT_SMALL.render("Alive: " + str(len(birds)), 1, (255, 255, 255))
+        win.blit(text, (10, 35)) 
 
     base.draw(win) # draw base
+
+    if exit_button is not None:
+        exit_button.draw(win) # draw exit button 
+
+    if threshold_msg is not None: 
+        win.blit(threshold_msg, (WIN_WIDTH - threshold_msg.get_width() - 5, 55))
 
     for bird in birds:
         bird.draw(win) # draw every bird in list
@@ -269,7 +286,7 @@ def draw_window(win, birds, pipes, base, score, gen):
 
 # main loop of game
 def main(genomes, config):
-    global gen # declares a global variable
+    global gen # declares a global variable 
 
     gen += 1 # add one to generation
 
@@ -277,6 +294,10 @@ def main(genomes, config):
     nets = [] # neural networks
     ge = [] # genomes
     birds = []  # change to a list to work with multiple birds
+
+    # keep track if a bird has met the threshold yet or not
+    threshold_met = False
+    threshold_msg = None
 
     # genome looks like (genome_id, genome_object)- we only want the g object
     for _, g in genomes: 
@@ -286,11 +307,12 @@ def main(genomes, config):
         g.fitness = 0
         ge.append(g) # add the genome to the list
 
-    #bird = Bird(230, 350) # where the bird starts
     base = Base(730) # the height is 800, so put the base at 730 since it's 70px tall
     pipes = [Pipe(600)]
     clock = pygame.time.Clock() # create a clock in order to keep track of how many ticks per second we do
     score = 0 # keep track of the user score (+1 every passed pipe)
+
+    exit_button = Button((197, 235, 207), 25, WIN_WIDTH - 100, 0, 100, 50, "Exit")
 
     run = True
     while run:
@@ -300,6 +322,18 @@ def main(genomes, config):
                 run = False # quit the game
                 pygame.quit()
                 quit()
+
+            pos = pygame.mouse.get_pos()
+            if event.type == pygame.MOUSEBUTTONDOWN: 
+                if exit_button.isOver(pos) and threshold_met: 
+                    run = False
+                else: 
+                    extra_small_font = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), 15)
+                    threshold_msg = extra_small_font.render("Wait for fitness to be met", 1, (255, 255, 255))
+                    
+        # if the user is impatient and wants to get out of the game, let them know when we meet the threshold
+        if threshold_met is not None and threshold_met: 
+            threshold_msg = extra_small_font.render("Fitness threshold met", 1, (255, 255, 255))
 
         #bird.move() # move the bird
         pipe_ind = 0 # keep track of what pipe we're looking at
@@ -316,6 +350,10 @@ def main(genomes, config):
             bird.move()
             # add fitness to the bird if it survives time
             ge[x].fitness += 0.1 # we want to encourage the bird to not kill itself
+            
+            # if we hit good fitness, allow the user to exit
+            if(ge[x].fitness > 75):
+                threshold_met = True
 
             # this function will return something from -1 to 1 due to our tanh activation function
             # we pass in the bird's spot, and the spot of the bottom pipe's height and the top pipe's bottom
@@ -365,9 +403,9 @@ def main(genomes, config):
                 ge.pop(x) 
 
         base.move() # move the base
-        draw_window(win, birds, pipes, base, score, gen)
+        draw_window(win, birds, pipes, base, score, exit_button, gen, threshold_msg)
 
-        if score >= 25:
+        if score >= 50:
             # open file, "wb" = "write binary"
             with open("best.pickle", "wb") as f:
                 pickle.dump(nets[0], f)
@@ -383,6 +421,8 @@ def runBestAI():
     clock = pygame.time.Clock() # create a clock in order to keep track of how many ticks per second we do
     score = 0 # keep track of the user score (+1 every passed pipe)
 
+    exit_button = Button((197, 235, 207), 25, WIN_WIDTH - 100, 0, 100, 50, "Exit")
+
     run = True
     while run:
         clock.tick(30) # means we do 30 ticks per second at max 
@@ -391,6 +431,11 @@ def runBestAI():
                 run = False # quit the game
                 pygame.quit()
                 quit()
+
+            pos = pygame.mouse.get_pos()
+            if event.type == pygame.MOUSEBUTTONDOWN: 
+                if exit_button.isOver(pos): 
+                    run = False
 
         pipe_ind = 0 # keep track of what pipe we're looking at
         # if we passed a pipe, then change the pipe we're looking at to the next one
@@ -437,7 +482,7 @@ def runBestAI():
             break
 
         base.move() # move the base
-        draw_window(win, [bird], pipes, base, score, None)
+        draw_window(win, [bird], pipes, base, score, exit_button)
 
 def runHumanMode():
     bird = Bird(230, 350) # there will only be one bird
@@ -446,7 +491,7 @@ def runHumanMode():
     pipes = [Pipe(600)]
     clock = pygame.time.Clock() # create a clock in order to keep track of how many ticks per second we do
     score = 0 # keep track of the user score (+1 every passed pipe)
-
+    
     run = True
     while run:
         clock.tick(30) # means we do 30 ticks per second at max 
@@ -455,6 +500,11 @@ def runHumanMode():
                 run = False # quit the game
                 pygame.quit()
                 quit()
+
+            pos = pygame.mouse.get_pos()
+            if event.type == pygame.MOUSEBUTTONDOWN: 
+                if exit_button.isOver(pos): 
+                    run = False
 
         pipe_ind = 0 # keep track of what pipe we're looking at
         # if we passed a pipe, then change the pipe we're looking at to the next one
@@ -501,7 +551,7 @@ def runHumanMode():
             break
 
         base.move() # move the base
-        draw_window(win, [bird], pipes, base, score, None)
+        draw_window(win, [bird], pipes, base, score)
 
 def runAI(config_path): 
     # this is a method from the NEAT module to configure what our AI will be like
@@ -518,46 +568,49 @@ def runAI(config_path):
     # provide fitness function and how many times this runs
     winner = p.run(main, 50)
 
-def redraw_main_gui(text, bird, *argv):
+def draw_main_gui(*argv):
     # fill the window with white and then draw the background
     win.fill((255, 255, 255))
     win.blit(BG_IMG, (0,0)) 
 
-    # draw the text onto the window
-    text.draw(win)
+    # create title with flappy bird font
+    title = FLAPPY_BIRD_FONT.render("Flappy Bird", 1, (0,0,0))
+    subtitle = FLAPPY_BIRD_FONT_SMALL.render("with AI", 1, (0,0,0))
 
-    # draw each button given to us
-    for button in argv: 
-        button.draw(win, (0, 0, 0))
+    # draw the text to the screen
+    win.blit(title, (WIN_WIDTH/2 - title.get_width()/2, 100))
+    win.blit(subtitle, (WIN_WIDTH/2 - subtitle.get_width()/2, 175))
 
-    # draw a bird
-    bird.draw(win)
+    # draw everything given to us
+    for x in argv: 
+        x.draw(win)
 
 def run_gui(): 
     run = True
     centerX = 250 # center of screen
-    buttonWidth = 200
-    textWidth = 250
-
-    bird = Bird(30, 30)
+    button_width = 200 # how wide the button is
+    bird = Bird(82, 50) # bird flapping in the corner
+    buttonY = 250 # where the first button starts
+    button_gap = 90 # space between each button
     
-    # this is actually just text (button background transparent)
-    flappy_bird_title = Button(None, 55, centerX - (textWidth/2), 50, textWidth, 120, "Flappy Bird [with AI]")
-
     # create buttons - init((color), fontSize, x, y, width, height, text="")
-    noAI_button = Button((197, 235, 207), 45, centerX - (buttonWidth/2), 225, buttonWidth, 65, "Manual Play")
-    trainAI_button = Button((197, 235, 207), 45, centerX - (buttonWidth/2), 225+125, buttonWidth, 65, "Train AI")
-    bestAI_button = Button((197, 235, 207), 45, centerX - (buttonWidth/2), 225+125+125, buttonWidth, 65, "Run best AI")
-    
+    noAI_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY, button_width, 60, "Manual Play")
+    trainAI_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY + button_gap, button_width, 60, "Train AI")
+    bestAI_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY + 2 * button_gap, button_width, 60, "Run best AI")
+    settings_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY + 3 * button_gap, button_width, 60, "Settings")
+
     clock = pygame.time.Clock()
 
     while run: 
-        clock.tick(30) # limit how many ticks there are
+        # reset the generation of the birds
+        global gen 
+        gen = 0
 
-        # function accepts (title, *argv)
-        redraw_main_gui(flappy_bird_title, bird, noAI_button, trainAI_button, bestAI_button)
-        pygame.display.update()
+        clock.tick(30) # limit how many ticks there are
         
+        draw_main_gui(bird, noAI_button, trainAI_button, bestAI_button, settings_button)
+        pygame.display.update()
+
         # grab the events from pygame
         for event in pygame.event.get(): 
             # position of the mouse

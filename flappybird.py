@@ -1,3 +1,7 @@
+"""
+This version has the AI implemented but without a user interface with Pygame
+"""
+
 import pygame
 import neat # documentation: https://neat-python.readthedocs.io/en/latest/config_file.html
 import time
@@ -232,7 +236,7 @@ def draw_window(win, birds, pipes, base, score, gen):
 
     pygame.display.update() # refreshes the window
 
-class Button():
+class Button:
     """
     Draws a button to the screen.
     """
