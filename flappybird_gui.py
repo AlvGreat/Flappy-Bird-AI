@@ -33,6 +33,7 @@ FLAPPY_BIRD_FONT_SMALL = pygame.font.Font(os.path.join("fonts", "flappybirdy", "
 
 STAT_FONT_BOLD = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Bold.ttf"), 50)
 STAT_FONT_SMALL = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), 25)
+EXTRA_SMALL_FONT = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), 15)
 
 # ----- we'll create a class for each of the main objects:
 
@@ -328,12 +329,11 @@ def main(genomes, config):
                 if exit_button.isOver(pos) and threshold_met: 
                     run = False
                 else: 
-                    extra_small_font = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), 15)
-                    threshold_msg = extra_small_font.render("Wait for fitness to be met", 1, (255, 255, 255))
+                    threshold_msg = EXTRA_SMALL_FONT.render("Wait for fitness to be met", 1, (255, 255, 255))
                     
         # if the user is impatient and wants to get out of the game, let them know when we meet the threshold
         if threshold_met is not None and threshold_met: 
-            threshold_msg = extra_small_font.render("Fitness threshold met", 1, (255, 255, 255))
+            threshold_msg = EXTRA_SMALL_FONT.render("Fitness threshold met", 1, (255, 255, 255))
 
         #bird.move() # move the bird
         pipe_ind = 0 # keep track of what pipe we're looking at
@@ -500,11 +500,6 @@ def runHumanMode():
                 run = False # quit the game
                 pygame.quit()
                 quit()
-
-            pos = pygame.mouse.get_pos()
-            if event.type == pygame.MOUSEBUTTONDOWN: 
-                if exit_button.isOver(pos): 
-                    run = False
 
         pipe_ind = 0 # keep track of what pipe we're looking at
         # if we passed a pipe, then change the pipe we're looking at to the next one
