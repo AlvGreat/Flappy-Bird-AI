@@ -1,8 +1,8 @@
 [NEAT]
 # so that we know to choose the max fitness 
 fitness_criterion     = max 
-# once we hit 75, we consider it perfect so we can exit loop
-fitness_threshold     = 75 
+# once we hit 100, we consider it perfect so we can exit loop
+fitness_threshold     = 100 
 # how many birds per population
 pop_size              = 20
 reset_on_extinction   = False

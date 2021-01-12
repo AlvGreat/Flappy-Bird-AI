@@ -16,6 +16,7 @@ WIN_HEIGHT = 800
 # pygame.transform.scale2x() makes an image 2x larger
 # pygame.image.load() loads an image
 # os.path.join() joins together directories/files automatically (used because it works with cross-platform)
+
 BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
 PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "pipe.png")))
 BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "base.png")))
@@ -222,7 +223,7 @@ def draw_window(win, bird, pipes, base, score):
 # main loop of game
 def main():
     bird = Bird(230, 350) #where it starts
-    base = Base(730) #the height is 800, so put the base at 730 since it's 70px tall
+    base = Base(730) # the height is 800, so put the base at 730 since it's 70px tall
     pipes = [Pipe(600)]
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     clock = pygame.time.Clock() # create a clock in order to keep track of how many ticks per second we do
@@ -274,4 +275,9 @@ def main():
     quit()
 
 main() # call main method
+
+
+
+
+
 

@@ -1,7 +1,6 @@
 """
 This is the main version with the AI implemented and a GUI with pygame
 """
-
 import pygame
 import neat # documentation: https://neat-python.readthedocs.io/en/latest/config_file.html
 import time
@@ -22,11 +21,17 @@ gen = 0
 # pygame.transform.scale2x() makes an image 2x larger
 # pygame.image.load() loads an image
 # os.path.join() joins together directories/files automatically (used because it works with cross-platform)
-BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
 PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "pipe.png")))
 BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "base.png")))
 BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bg.png")))
 
+# set bird images
+REGULAR_BIRD = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
+GREGORY_BIRD = [pygame.image.load(os.path.join("imgs", "gregory_skin1.png")), pygame.image.load(os.path.join("imgs", "gregory_skin1.png")), pygame.image.load(os.path.join("imgs", "gregory_skin1.png"))]
+ALVIN_BIRD = [pygame.image.load(os.path.join("imgs", "alvin_skin2_1.png")), pygame.image.load(os.path.join("imgs", "alvin_skin2_2.png")), pygame.image.load(os.path.join("imgs", "alvin_skin2_3.png"))]
+
+# actual bird image used in game - CUSTOMIZE THIS 
+BIRD_IMGS = REGULAR_BIRD
 
 FLAPPY_BIRD_FONT = pygame.font.Font(os.path.join("fonts", "flappybirdy", "FlappyBirdy.ttf"), 90)
 FLAPPY_BIRD_FONT_SMALL = pygame.font.Font(os.path.join("fonts", "flappybirdy", "FlappyBirdy.ttf"), 50)
@@ -352,7 +357,7 @@ def main(genomes, config):
             ge[x].fitness += 0.1 # we want to encourage the bird to not kill itself
             
             # if we hit good fitness, allow the user to exit
-            if(ge[x].fitness > 75):
+            if(ge[x].fitness > 100):
                 threshold_met = True
 
             # this function will return something from -1 to 1 due to our tanh activation function

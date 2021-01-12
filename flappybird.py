@@ -12,7 +12,7 @@ pygame.font.init() # we have to do this for fonts
 
 # size of the window. Note that all caps in python signals a constant
 WIN_WIDTH = 500
-WIN_HEIGHT = 800
+WIN_HEIGHT = 750
 # create window 
 win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
