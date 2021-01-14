@@ -1,6 +1,7 @@
 """
 This is the main version with the AI implemented and a GUI with pygame
 """
+
 import pygame
 import neat # documentation: https://neat-python.readthedocs.io/en/latest/config_file.html
 import time
@@ -46,7 +47,7 @@ class Bird:
     """
     The bird class represents the flappy bird.
     """
-    IMGS = BIRD_IMGS
+    global BIRD_IMGS
     MAX_ROTATION = 25 # how much bird rotates in flaps
     ROT_VEL = 20 # rotation velocity, how much we rotate/frame 
     ANIMATION_TIME = 5 # how long to show each bird animation
@@ -59,7 +60,7 @@ class Bird:
         self.vel = 0 # velocity starts at 0
         self.height = self.y
         self.img_count = 0 # what image we're currently showing for animations
-        self.img = self.IMGS[0] # start with first img
+        self.img = BIRD_IMGS[0] # start with first img
 
     def jump(self): 
         self.vel = -10.5 # this means that when jumping, move 10.5px up, since (0,0) is top left corner
@@ -98,20 +99,20 @@ class Bird:
 
         # this gives the animation- looks like the bird flaps
         if self.img_count < self.ANIMATION_TIME:
-            self.img = self.IMGS[0]
+            self.img = BIRD_IMGS[0]
         elif self.img_count < self.ANIMATION_TIME*2:
-            self.img = self.IMGS[1]
+            self.img = BIRD_IMGS[1]
         elif self.img_count < self.ANIMATION_TIME*3:
-            self.img = self.IMGS[2]
+            self.img = BIRD_IMGS[2]
         elif self.img_count < self.ANIMATION_TIME*4:
-            self.img = self.IMGS[1]
+            self.img = BIRD_IMGS[1]
         elif self.img_count == self.ANIMATION_TIME*4 + 1:
-            self.img = self.IMGS[0]
+            self.img = BIRD_IMGS[0]
             self.img_count = 0
 
         # if it's already looking down, then just make it look down
         if self.tilt <= -80: 
-            self.img = self.IMGS[1]
+            self.img = BIRD_IMGS[1]
             self.img_count = self.ANIMATION_TIME*2 # skips to the correct frame
 
         # rotates the image according to tilt
@@ -585,6 +586,62 @@ def draw_main_gui(*argv):
     for x in argv: 
         x.draw(win)
 
+def run_settings_gui():
+    global BIRD_IMGS # we will be updating the bird images
+
+    # fill the window with white and then draw the background
+    win.fill((255, 255, 255))
+    win.blit(BG_IMG, (0,0)) 
+
+    # create title with flappy bird font
+    title = FLAPPY_BIRD_FONT.render("Settings", 1, (0,0,0))
+
+    # draw the text to the screen
+    win.blit(title, (WIN_WIDTH/2 - title.get_width()/2, 100))
+
+    button_width = 175
+    buttonX = 250 - button_width/2
+    buttonY = 250 # where first button starts
+    button_gap = 80 # space between each button
+
+    normal_button = Button((197, 235, 207), 25, buttonX, buttonY, button_width, 60, "Normal Bird")
+    alvin_button = Button((197, 235, 207), 25, buttonX, buttonY + button_gap, button_width, 60, "Alvin's Bird")
+    gregory_button = Button((197, 235, 207), 25, buttonX, buttonY + 2 * button_gap, button_width, 60, "Gregory's Bird")
+
+    normal_button.draw(win)
+    alvin_button.draw(win)
+    gregory_button.draw(win)
+    
+    run = True
+    clock = pygame.time.Clock()
+    while run: 
+        clock.tick(30)
+        
+        pygame.display.update() # IMPORTANT
+
+        # grab the events from pygame
+        for event in pygame.event.get(): 
+            # position of the mouse
+            pos = pygame.mouse.get_pos()
+
+            if event.type == pygame.QUIT:
+                run = False # quit the game
+                pygame.quit()
+                quit()
+
+            # set bird images accordingly and exit the menu
+            if event.type == pygame.MOUSEBUTTONDOWN: 
+                if normal_button.isOver(pos):
+                    BIRD_IMGS = REGULAR_BIRD
+                    run = False
+                if alvin_button.isOver(pos): 
+                    BIRD_IMGS = ALVIN_BIRD
+                    run = False
+                if gregory_button.isOver(pos): 
+                    BIRD_IMGS = GREGORY_BIRD
+                    run = False
+
+
 def run_gui(): 
     run = True
     centerX = 250 # center of screen
@@ -603,7 +660,7 @@ def run_gui():
 
     while run: 
         # reset the generation of the birds
-        global gen 
+        global gen # global keyword so we can modify the global variable
         gen = 0
 
         clock.tick(30) # limit how many ticks there are
@@ -633,5 +690,7 @@ def run_gui():
                     runBestAI()
                 if noAI_button.isOver(pos): 
                     runHumanMode()
+                if settings_button.isOver(pos):
+                    run_settings_gui()
                     
 run_gui() # run the main gui
