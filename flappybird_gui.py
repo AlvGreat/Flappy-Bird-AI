@@ -30,6 +30,7 @@ BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bg.png
 REGULAR_BIRD = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
 GREGORY_BIRD = [pygame.image.load(os.path.join("imgs", "gregory_skin1.png")), pygame.image.load(os.path.join("imgs", "gregory_skin2.png")), pygame.image.load(os.path.join("imgs", "gregory_skin3.png"))]
 ALVIN_BIRD = [pygame.image.load(os.path.join("imgs", "alvin_skin2_1.png")), pygame.image.load(os.path.join("imgs", "alvin_skin2_2.png")), pygame.image.load(os.path.join("imgs", "alvin_skin2_3.png"))]
+LILLIAN_BIRD = [pygame.transform.scale(pygame.image.load(os.path.join("imgs", "lillian_skin1.png")), (64, 64)), pygame.transform.scale(pygame.image.load(os.path.join("imgs", "lillian_skin2.png")), (64, 64)), pygame.transform.scale(pygame.image.load(os.path.join("imgs", "lillian_skin3.png")), (64, 64))]
 
 # actual bird image used in game - CUSTOMIZE THIS 
 BIRD_IMGS = REGULAR_BIRD
@@ -605,13 +606,15 @@ def run_settings_gui():
     button_gap = 80 # space between each button
 
     normal_button = Button((197, 235, 207), 25, buttonX, buttonY, button_width, 60, "Normal Bird")
-    alvin_button = Button((197, 235, 207), 25, buttonX, buttonY + button_gap, button_width, 60, "Alvin's Bird")
-    gregory_button = Button((197, 235, 207), 25, buttonX, buttonY + 2 * button_gap, button_width, 60, "Gregory's Bird")
+    alvin_button = Button((197, 235, 207), 25, buttonX, buttonY + button_gap, button_width, 60, "Alvin's Skin")
+    gregory_button = Button((197, 235, 207), 25, buttonX, buttonY + 2 * button_gap, button_width, 60, "Gregory's Skin")
+    lillian_button  = Button((197, 235, 207), 25, buttonX, buttonY + 3 * button_gap, button_width, 60, "Lillian's Skin")
 
     normal_button.draw(win)
     alvin_button.draw(win)
     gregory_button.draw(win)
-    
+    lillian_button.draw(win)
+
     run = True
     clock = pygame.time.Clock()
     while run: 
@@ -639,6 +642,9 @@ def run_settings_gui():
                     run = False
                 if gregory_button.isOver(pos): 
                     BIRD_IMGS = GREGORY_BIRD
+                    run = False
+                if lillian_button.isOver(pos): 
+                    BIRD_IMGS = LILLIAN_BIRD
                     run = False
 
 
