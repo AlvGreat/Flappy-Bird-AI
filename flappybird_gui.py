@@ -28,7 +28,7 @@ BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bg.png
 
 # set bird images
 REGULAR_BIRD = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))), pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
-GREGORY_BIRD = [pygame.image.load(os.path.join("imgs", "gregory_skin1.png")), pygame.image.load(os.path.join("imgs", "gregory_skin1.png")), pygame.image.load(os.path.join("imgs", "gregory_skin1.png"))]
+GREGORY_BIRD = [pygame.image.load(os.path.join("imgs", "gregory_skin1.png")), pygame.image.load(os.path.join("imgs", "gregory_skin2.png")), pygame.image.load(os.path.join("imgs", "gregory_skin3.png"))]
 ALVIN_BIRD = [pygame.image.load(os.path.join("imgs", "alvin_skin2_1.png")), pygame.image.load(os.path.join("imgs", "alvin_skin2_2.png")), pygame.image.load(os.path.join("imgs", "alvin_skin2_3.png"))]
 
 # actual bird image used in game - CUSTOMIZE THIS 
@@ -594,7 +594,7 @@ def run_settings_gui():
     win.blit(BG_IMG, (0,0)) 
 
     # create title with flappy bird font
-    title = FLAPPY_BIRD_FONT.render("Settings", 1, (0,0,0))
+    title = FLAPPY_BIRD_FONT.render("Skins", 1, (0,0,0))
 
     # draw the text to the screen
     win.blit(title, (WIN_WIDTH/2 - title.get_width()/2, 100))
@@ -654,7 +654,7 @@ def run_gui():
     noAI_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY, button_width, 60, "Manual Play")
     trainAI_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY + button_gap, button_width, 60, "Train AI")
     bestAI_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY + 2 * button_gap, button_width, 60, "Run best AI")
-    settings_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY + 3 * button_gap, button_width, 60, "Settings")
+    settings_button = Button((197, 235, 207), 25, centerX - (button_width/2), buttonY + 3 * button_gap, button_width, 60, "Skins")
 
     clock = pygame.time.Clock()
 
