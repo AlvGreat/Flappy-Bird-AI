@@ -1,5 +1,6 @@
 """
 This is the main version with the AI implemented and a GUI with pygame
+Note: sound effects are from Mario, from Gaming Sound FX on youtube, https://www.youtube.com/channel/UCi-xN4ZB6e-0JcXzvBEomlw
 """
 
 import pygame
