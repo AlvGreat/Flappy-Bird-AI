@@ -10,7 +10,6 @@ import os
 import random 
 import pickle # to save our model
 
-#pygame.init() # initialize pygame
 pygame.mixer.init(44100, -16, 2, 64)
 pygame.font.init() # we have to do this for fonts
 
@@ -269,6 +268,7 @@ class Button:
         # pos is going to be the mouse position returned from pygame.mouse.get_pos()    
         return False
 
+# draws the main game window of the game
 def draw_window(win, birds, pipes, base, score, exit_button=None, gen=None, threshold_msg=None): 
     """
     Draws everything to the window
@@ -306,7 +306,7 @@ def draw_window(win, birds, pipes, base, score, exit_button=None, gen=None, thre
 
     pygame.display.update() # refreshes the window
 
-# main AI loop of game
+# main loop that trains a new neural network
 def main(genomes, config):
     global gen # declares a global variable 
 
@@ -579,6 +579,7 @@ def runHumanMode():
         base.move() # move the base
         draw_window(win, [bird], pipes, base, score)
 
+# runs the NEAT AI
 def runAI(config_path): 
     # this is a method from the NEAT module to configure what our AI will be like
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -594,6 +595,7 @@ def runAI(config_path):
     # provide fitness function and how many times this runs
     winner = p.run(main, 50)
 
+# redraws the main gui 
 def draw_main_gui(*argv):
     # fill the window with white and then draw the background
     win.fill((255, 255, 255))
@@ -611,6 +613,7 @@ def draw_main_gui(*argv):
     for x in argv: 
         x.draw(win)
 
+# run the settings gui with the skins
 def run_settings_gui():
     global BIRD_IMGS # we will be updating the bird images
 
@@ -671,7 +674,7 @@ def run_settings_gui():
                     BIRD_IMGS = LILLIAN_BIRD
                     run = False
 
-
+# runs the main gui of the game
 def run_gui(): 
     run = True
     centerX = 250 # center of screen
