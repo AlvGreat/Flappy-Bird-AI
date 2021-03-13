@@ -8,6 +8,9 @@ import time
 import os 
 import random 
 import pickle # to save our model
+
+#pygame.init() # initialize pygame
+pygame.mixer.init(44100, -16, 2, 64)
 pygame.font.init() # we have to do this for fonts
 
 # size of the window. Note that all caps in python signals a constant
@@ -41,6 +44,16 @@ FLAPPY_BIRD_FONT_SMALL = pygame.font.Font(os.path.join("fonts", "flappybirdy", "
 STAT_FONT_BOLD = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Bold.ttf"), 50)
 STAT_FONT_SMALL = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), 25)
 EXTRA_SMALL_FONT = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regular.ttf"), 15)
+
+# sound effects, use with effect.play()
+JUMP_EFFECT = pygame.mixer.Sound(os.path.join("music", "jump.wav"))
+JUMP_EFFECT.set_volume(0.07)
+
+DEATH_EFFECT = pygame.mixer.Sound(os.path.join("music", "death.wav"))
+DEATH_EFFECT.set_volume(0.2)
+
+POINT_EFFECT = pygame.mixer.Sound(os.path.join("music", "point.wav"))
+POINT_EFFECT.set_volume(0.2)
 
 # ----- we'll create a class for each of the main objects:
 
@@ -292,7 +305,7 @@ def draw_window(win, birds, pipes, base, score, exit_button=None, gen=None, thre
 
     pygame.display.update() # refreshes the window
 
-# main loop of game
+# main AI loop of game
 def main(genomes, config):
     global gen # declares a global variable 
 
@@ -417,6 +430,7 @@ def main(genomes, config):
             with open("best.pickle", "wb") as f:
                 pickle.dump(nets[0], f)
 
+# main loop with best AI 
 def runBestAI():
     bird = Bird(230, 350) # there will only be one bird
     
@@ -454,6 +468,7 @@ def runBestAI():
         output = model.activate((bird.y, abs(bird.y - pipes[pipe_ind].height), abs(bird.y - pipes[pipe_ind].bottom)))
         # output is a list of output neurons- we only have one, so use index 0 
         if (output[0] > 0.5): 
+            JUMP_EFFECT.play()
             bird.jump()
 
         rem = [] # list of pipes to remove
@@ -461,6 +476,7 @@ def runBestAI():
         for pipe in pipes: 
             if pipe.collide(bird, win): 
                 run = False 
+                DEATH_EFFECT.play()
                 break
                 
             # if we passed the pipe
@@ -477,6 +493,7 @@ def runBestAI():
         # then we have to add a score and a new pipe
         if add_pipe: 
             score += 1
+            POINT_EFFECT.play()
             pipes.append(Pipe(600)) # add new pipe
 
         #remove everything in the array of pipes to be removed 
@@ -486,11 +503,13 @@ def runBestAI():
         # check collision between bird and floor
         if (bird.y + bird.img.get_height() >= 730 or bird.y < 0):
             run = False
+            DEATH_EFFECT.play()
             break
 
         base.move() # move the base
         draw_window(win, [bird], pipes, base, score, exit_button)
 
+# main loop with manual play
 def runHumanMode():
     bird = Bird(230, 350) # there will only be one bird
 
@@ -519,12 +538,14 @@ def runHumanMode():
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
             bird.jump()
+            JUMP_EFFECT.play()
 
         rem = [] # list of pipes to remove
         add_pipe = False
         for pipe in pipes: 
             if pipe.collide(bird, win): 
                 run = False 
+                DEATH_EFFECT.play()
                 break
                 
             # if we passed the pipe
@@ -541,6 +562,7 @@ def runHumanMode():
         # then we have to add a score and a new pipe
         if add_pipe: 
             score += 1
+            POINT_EFFECT.play()
             pipes.append(Pipe(600)) # add new pipe
 
         #remove everything in the array of pipes to be removed 
@@ -550,6 +572,7 @@ def runHumanMode():
         # check collision between bird and floor
         if (bird.y + bird.img.get_height() >= 730 or bird.y < 0):
             run = False
+            DEATH_EFFECT.play()
             break
 
         base.move() # move the base
