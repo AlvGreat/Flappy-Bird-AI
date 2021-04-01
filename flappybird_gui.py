@@ -10,7 +10,7 @@ import os
 import random 
 import pickle # to save our model
 
-pygame.mixer.init(44100, -16, 2, 64)
+pygame.mixer.init(44100, -16, 2, 64) # initialize pygame mixer for game sound effects
 pygame.font.init() # we have to do this for fonts
 
 # size of the window. Note that all caps in python signals a constant
