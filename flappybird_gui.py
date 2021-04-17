@@ -10,8 +10,9 @@ import os
 import random 
 import pickle # to save our model
 
-pygame.mixer.init(44100, -16, 2, 64) # initialize pygame mixer for game sound effects
-pygame.font.init() # we have to do this for fonts
+pygame.mixer.init(44100, -16, 2, 32) # initialize pygame mixer for game sound effects
+
+pygame.font.init() # initialize pygame fonts
 
 # size of the window. Note that all caps in python signals a constant
 WIN_WIDTH = 500
@@ -47,13 +48,13 @@ EXTRA_SMALL_FONT = pygame.font.Font(os.path.join("fonts", "Roboto", "Roboto-Regu
 
 # sound effects, use with effect.play()
 JUMP_EFFECT = pygame.mixer.Sound(os.path.join("music", "jump.wav"))
-JUMP_EFFECT.set_volume(0.07)
+JUMP_EFFECT.set_volume(0.05)
 
 DEATH_EFFECT = pygame.mixer.Sound(os.path.join("music", "death.wav"))
-DEATH_EFFECT.set_volume(0.2)
+DEATH_EFFECT.set_volume(0.15)
 
 POINT_EFFECT = pygame.mixer.Sound(os.path.join("music", "point.wav"))
-POINT_EFFECT.set_volume(0.2)
+POINT_EFFECT.set_volume(0.15)
 
 # ----- we'll create a class for each of the main objects:
 
@@ -352,8 +353,9 @@ def main(genomes, config):
                 else: 
                     threshold_msg = EXTRA_SMALL_FONT.render("Wait for fitness to be met", 1, (255, 255, 255))
                     
-        # if the user is impatient and wants to get out of the game, let them know when we meet the threshold
-        if threshold_met is not None and threshold_met: 
+        # if the threshold message is already something (saying "wait for fitness to be met")
+        # then we let the user know when it's met so they know when they can exit
+        if threshold_msg is not None and threshold_met:  
             threshold_msg = EXTRA_SMALL_FONT.render("Fitness threshold met", 1, (255, 255, 255))
 
         #bird.move() # move the bird
@@ -432,7 +434,7 @@ def main(genomes, config):
                 pickle.dump(nets[0], f)
 
 # main loop with best AI 
-def runBestAI():
+def run_best_AI():
     bird = Bird(230, 350) # there will only be one bird
     
     with open("best.pickle", "rb") as f:
@@ -511,7 +513,7 @@ def runBestAI():
         draw_window(win, [bird], pipes, base, score, exit_button)
 
 # main loop with manual play
-def runHumanMode():
+def run_normal_mode():
     bird = Bird(230, 350) # there will only be one bird
 
     base = Base(730) # the height is 800, so put the base at 730 since it's 70px tall
@@ -720,9 +722,9 @@ def run_gui():
                         config_path = os.path.join(local_dir, 'config-feedforward.txt') # join current dir with the file
                         runAI(config_path)
                 if bestAI_button.isOver(pos): 
-                    runBestAI()
+                    run_best_AI()
                 if noAI_button.isOver(pos): 
-                    runHumanMode()
+                    run_normal_mode()
                 if settings_button.isOver(pos):
                     run_settings_gui()
                     
